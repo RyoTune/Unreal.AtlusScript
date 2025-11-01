@@ -8,10 +8,11 @@ using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
 using System.Diagnostics;
-using System.Drawing;
 using System.Text;
+using System.Text.Json;
 using Unreal.AtlusScript.Interfaces;
 using Unreal.AtlusScript.Reloaded.AtlusScript;
+using Unreal.AtlusScript.Reloaded.AtlusScript.Models;
 using Unreal.AtlusScript.Reloaded.Configuration;
 using Unreal.AtlusScript.Reloaded.Template;
 using Unreal.ObjectsEmitter.Interfaces;
@@ -64,9 +65,10 @@ public class Mod : ModBase, IExports
         var flowCompiler = new FlowScriptCompiler(AtlusScriptLibrary.FlowScriptLanguage.FormatVersion.Version4BigEndian) { Encoding = Encoding.UTF8, Library = gameLibrary };
 
         var assetCompiler = new AtlusAssetCompiler(flowCompiler, msgCompiler);
-        this.atlusRegistry = new(assetCompiler);
-        this.atlusScript = new(uobjects!, unreal!, this.atlusRegistry, flowDecompiler, gameLibrary, modDir);
 
+        var registry = FileCacheRegistry.LoadOrCreate(modDir, modConfig.ModVersion);
+        this.atlusRegistry = new(this.modLoader, assetCompiler, registry);
+        this.atlusScript = new(uobjects!, unreal!, this.atlusRegistry, flowDecompiler, gameLibrary, modDir, config);
         this.modLoader.AddOrReplaceController<IAtlusAssets>(this.owner, this.atlusRegistry);
         this.modLoader.ModLoading += this.OnModLoading;
         this.ApplyConfig();

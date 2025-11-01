@@ -26,9 +26,11 @@ internal unsafe class AtlusScriptService
     private readonly GameFunctions game;
     private readonly string dumpDir;
 
+    private Config configuration;
     private DumpType dumpBmds;
     private DumpType dumpBfs;
     private Decomp_Endianess decompBfEndian;
+    private ESystemLanguage gameLanguage = ESystemLanguage.Any;
 
     public AtlusScriptService(
         IUObjects uobjects,
@@ -36,17 +38,29 @@ internal unsafe class AtlusScriptService
         AtlusAssetsRegistry registry,
         FlowScriptDecompiler flowDecompiler,
         Library gameLibrary,
-        string modDir)
+        string modDir,
+        Config config)
     {
         this.unreal = unreal;
         this.assetsRegistry = registry;
         this.flowDecompiler = flowDecompiler;
         this.gameLibrary = gameLibrary;
         this.game = new();
+        this.configuration = config;
         this.dumpDir = Directory.CreateDirectory(Path.Join(modDir, "dump")).FullName;
         uobjects.ObjectCreated += this.OnObjectCreated;
+        _GetLanguage = new SHFunction<GetLanguage>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 E8");        
+    }
 
-        _GetLanguage = new SHFunction<GetLanguage>("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 30 E8");
+    private void GetGameLanguage()
+    {
+        if (_GetLanguage == null || _GetLanguage.OriginalFunction == null)
+        {
+            return;
+        }
+
+        gameLanguage = _GetLanguage.OriginalFunction();
+        Log.Information($"Game Language set to: {gameLanguage}");
     }
 
     private void OnObjectCreated(UnrealObject obj)
@@ -105,18 +119,20 @@ internal unsafe class AtlusScriptService
         }
 
         var mode = this.game.IsAstrea() ? AssetMode.Astrea : AssetMode.Default;
-        if (this.assetsRegistry.TryGetAsset(mode, obj.Name, out var data))
+        if(gameLanguage == ESystemLanguage.Any)
+        {
+            GetGameLanguage();
+        }
+        if (this.assetsRegistry.TryGetAsset(mode, obj.Name, out var data, (ESystemLanguage)gameLanguage!))
         {
             var objAsset = (UAtlusScriptAsset*)obj.Self;
-
             var buffer = this.unreal.FMalloc(data.Length, 0);
             Marshal.Copy(data, 0, buffer, data.Length);
-
             objAsset->mBuf.Num = data.Length;
             objAsset->mBuf.Max = data.Length;
             objAsset->mBuf.AllocatorInstance = (byte*)buffer;
             Log.Debug($"Custom Asset ({mode}): {obj.Name}");
-        };
+        }
     }
 
     private static void DumpBinaryData(TArray<byte> data, string outputFile)

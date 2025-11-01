@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Unreal.AtlusScript.Interfaces;
 using Unreal.AtlusScript.Reloaded.Template.Configuration;
 
 namespace Unreal.AtlusScript.Reloaded.Configuration;
@@ -23,6 +24,11 @@ public class Config : Configurable<Config>
     [Description("Set what endianess to use when decompiling BFs. Default is to try both if one fails, with BE first.")]
     [DefaultValue(Decomp_Endianess.Both)]
     public Decomp_Endianess Decomp_BF_Endian { get; set; } = Decomp_Endianess.Both;
+
+    [DisplayName("Override Asset Locale")]
+    [Description("Override the locale of assets to load.")]
+    [DefaultValue(ESystemLanguage.Disabled)]
+    public ESystemLanguage OverrideAssetLocale { get; set; } = ESystemLanguage.Disabled;
 }
 
 public enum DumpType

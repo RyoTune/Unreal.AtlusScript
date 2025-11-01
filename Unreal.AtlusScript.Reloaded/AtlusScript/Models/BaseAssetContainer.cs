@@ -38,4 +38,14 @@ internal abstract class BaseAssetContainer
             Log.Debug($"{this.Name}: Updated data from source.");
         }
     }
+
+    public void SyncCache(byte[] cachedData)
+    {
+        this.Data = cachedData;
+
+        if (this.Data != null)
+        {
+            Log.Debug($"{this.Name}: Updated data from cached source.");
+        }
+    }
 }

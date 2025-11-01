@@ -17,6 +17,21 @@ public interface IAtlusAssets
     void AddAssetsFolder(string assetsDir, AssetMode mode);
 
     /// <summary>
+    /// Add a folder to register Atlus assets from, has caching enabled.
+    /// </summary>
+    /// <param name="assetsDir">Assets folder.</param>
+    /// <param name="modId">Mod ID of the caller.</param>
+    /// <param name="mode">Registration mode.</param>
+    void AddAssetsFolderCached(string assetsDir, string modId, AssetMode mode);
+
+    /// <summary>
+    /// Add a folder to register Atlus assets from, has caching enabled.
+    /// </summary>
+    /// <param name="assetsDir">Assets folder.</param>
+    /// <param name="modId">Mod ID of the caller.</param>
+    void AddAssetsFolderCached(string assetsDir, string modId);
+
+    /// <summary>
     /// Add an asset with the given name and content.
     /// For default (Xrd777) game scripts only.
     /// </summary>
@@ -47,3 +62,22 @@ public enum AssetMode
     Astrea,
     Both,
 }
+
+public enum ESystemLanguage : byte
+{
+    JP = 0,
+    EN = 1,
+    FR = 2,
+    IT = 3,
+    DE = 4,
+    ES = 5,
+    ZH_HANS = 6,
+    ZH_HANT = 7,
+    KO = 8,
+    RU = 9,
+    PT = 10,
+    TR = 11,
+    PL = 12,
+    Any,
+    Disabled, // For overriding asset locale, only used for the config and should not be used elsewhere.
+};
